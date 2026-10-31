@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ESP-IDF 可视化工具</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- 顶栏 -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">⚡</div>
+        <div class="brand-text">
+          <h1>ESP-IDF 可视化工具</h1>
+          <p id="idf-version" class="idf-version">检测中…</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" id="btn-config-toggle" title="环境配置">⚙ 环境配置</button>
+        <span id="server-status" class="status-dot"><i></i><em>连接中</em></span>
+      </div>
+    </header>
+
+    <!-- 环境配置面板 -->
+    <section class="config-panel" id="config-panel" hidden>
+      <div class="panel-head">
+        <h2>环境配置</h2>
+        <button class="btn btn-ghost btn-sm" id="btn-config-close">收起</button>
+      </div>
+      <div class="config-grid">
+        <label>IDF 框架目录 (IDF_PATH)
+          <input type="text" id="cfg-idf-path" placeholder="D:\esp\v6.0.3\esp-idf" />
+        </label>
+        <label>工具目录 (IDF_TOOLS_PATH)
+          <input type="text" id="cfg-tools-path" placeholder="D:\esp\v6.0.3" />
+        </label>
+        <label>Python 虚拟环境 (IDF_PYTHON_ENV_PATH)
+          <input type="text" id="cfg-python-env" placeholder="D:\esp\v6.0.3\tools\python\v6.0.3\venv" />
+        </label>
+        <label>工程根目录 (projects_root)
+          <input type="text" id="cfg-projects-root" placeholder="D:\project\esp32-study" />
+        </label>
+      </div>
+      <div class="panel-foot">
+        <button class="btn btn-primary" id="btn-config-save">保存配置</button>
+        <button class="btn btn-ghost" id="btn-config-redetect">自动检测</button>
+        <span class="hint">修改保存后需重启服务生效</span>
+      </div>
+    </section>
+
+    <!-- 主布局 -->
+    <main class="main">
+      <!-- 左侧：命令区 -->
+      <div class="left">
+        <!-- 目标选择 -->
+        <section class="card selectors">
+          <div class="selector">
+            <label for="project-select">工程</label>
+            <div class="select-wrap">
+              <select id="project-select"></select>
+              <button class="btn btn-icon" id="btn-refresh-projects" title="刷新工程">↻</button>
+            </div>
+          </div>
+          <div class="selector">
+            <label for="port-select">串口</label>
+            <div class="select-wrap">
+              <select id="port-select"></select>
+              <button class="btn btn-icon" id="btn-refresh-ports" title="刷新串口">↻</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 命令分组 -->
+        <div class="command-groups">
+          <section class="card group" data-group="工程管理">
+            <h2 class="group-title">工程管理</h2>
+            <div class="cmds">
+              <button class="cmd" data-command="create-project" data-need="name">
+                <span class="cmd-icon">📦</span><span class="cmd-name">创建工程</span><span class="cmd-desc">create-project</span>
+              </button>
+              <button class="cmd" data-command="create-component" data-need="component">
+                <span class="cmd-icon">🧩</span><span class="cmd-name">创建组件</span><span class="cmd-desc">create-component</span>
+              </button>
+              <button class="cmd" data-command="set-target" data-need="target">
+                <span class="cmd-icon">🎯</span><span class="cmd-name">设置芯片</span><span class="cmd-desc">set-target</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="card group" data-group="构建">
+            <h2 class="group-title">构建</h2>
+            <div class="cmds">
+              <button class="cmd" data-command="build">
+                <span class="cmd-icon">🔨</span><span class="cmd-name">编译</span><span class="cmd-desc">build</span>
+              </button>
+              <button class="cmd" data-command="menuconfig">
+                <span class="cmd-icon">🛠</span><span class="cmd-name">菜单配置</span><span class="cmd-desc">menuconfig（新窗口）</span>
+              </button>
+              <button class="cmd" data-command="reconfigure">
+                <span class="cmd-icon">🔄</span><span class="cmd-name">重新配置</span><span class="cmd-desc">reconfigure</span>
+              </button>
+              <button class="cmd" data-command="clean">
+                <span class="cmd-icon">🧹</span><span class="cmd-name">清理</span><span class="cmd-desc">clean</span>
+              </button>
+              <button class="cmd" data-command="fullclean">
+                <span class="cmd-icon">🗑</span><span class="cmd-name">深度清理</span><span class="cmd-desc">fullclean</span>
+              </button>
+              <button class="cmd" data-command="python-clean">
+                <span class="cmd-icon">🐍</span><span class="cmd-name">清理 Python</span><span class="cmd-desc">python-clean</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="card group" data-group="烧录与监视">
+            <h2 class="group-title">烧录与监视</h2>
+            <div class="cmds">
+              <button class="cmd" data-command="flash" data-need="port">
+                <span class="cmd-icon">⚡</span><span class="cmd-name">烧录</span><span class="cmd-desc">flash</span>
+              </button>
+              <button class="cmd" data-command="monitor" data-need="port">
+                <span class="cmd-icon">👁</span><span class="cmd-name">监视输出</span><span class="cmd-desc">monitor</span>
+              </button>
+              <button class="cmd" data-command="flash-monitor" data-need="port">
+                <span class="cmd-icon">🚀</span><span class="cmd-name">烧录并监视</span><span class="cmd-desc">flash + monitor</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="card group" data-group="大小分析">
+            <h2 class="group-title">大小分析</h2>
+            <div class="cmds">
+              <button class="cmd" data-command="size">
+                <span class="cmd-icon">📊</span><span class="cmd-name">总大小</span><span class="cmd-desc">size</span>
+              </button>
+              <button class="cmd" data-command="size-components">
+                <span class="cmd-icon">🧱</span><span class="cmd-name">组件大小</span><span class="cmd-desc">size-components</span>
+              </button>
+              <button class="cmd" data-command="size-files">
+                <span class="cmd-icon">📄</span><span class="cmd-name">文件大小</span><span class="cmd-desc">size-files</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="card group" data-group="其他">
+            <h2 class="group-title">其他</h2>
+            <div class="cmds">
+              <button class="cmd" data-command="uf2">
+                <span class="cmd-icon">💾</span><span class="cmd-name">生成 UF2</span><span class="cmd-desc">uf2</span>
+              </button>
+              <button class="cmd" data-command="read-otadata">
+                <span class="cmd-icon">🔎</span><span class="cmd-name">读取 OTA 数据</span><span class="cmd-desc">read-otadata</span>
+              </button>
+              <button class="cmd" data-command="docs">
+                <span class="cmd-icon">📖</span><span class="cmd-name">打开文档</span><span class="cmd-desc">docs</span>
+              </button>
+              <button class="cmd" data-command="merge-bin" data-need="merge">
+                <span class="cmd-icon">🔗</span><span class="cmd-name">合并 Bin</span><span class="cmd-desc">merge-bin</span>
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- 右侧：输出终端 -->
+      <div class="right">
+        <section class="card terminal-card">
+          <div class="terminal-head">
+            <div class="terminal-title">
+              <span class="running-dot" id="running-dot" hidden></span>
+              <h2>运行输出</h2>
+              <span id="running-label" class="running-label"></span>
+            </div>
+            <div class="terminal-actions">
+              <button class="btn btn-ghost btn-sm" id="btn-clear" title="清空输出">清空</button>
+              <button class="btn btn-danger btn-sm" id="btn-stop" title="停止当前任务" disabled>■ 停止</button>
+            </div>
+          </div>
+          <div class="terminal" id="terminal">
+            <div class="terminal-welcome">
+              <p>欢迎使用 ESP-IDF 可视化工具 👋</p>
+              <p>选择左侧命令按钮即可执行，输出将实时显示在这里。</p>
+              <p class="muted">提示：menuconfig 会在新窗口打开；flash / monitor 需先选择串口。</p>
+            </div>
+          </div>
+          <div class="terminal-status" id="terminal-status">就绪</div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- 参数弹窗 -->
+  <div class="modal-mask" id="modal-mask" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="modal-title">参数</h3>
+        <button class="btn btn-ghost btn-sm" id="btn-modal-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="btn-modal-cancel">取消</button>
+        <button class="btn btn-primary" id="btn-modal-ok">执行</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

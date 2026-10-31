@@ -1,0 +1,7 @@
+{
+  "idf_path": "D:\\esp\\v6.0.3\\esp-idf",
+  "idf_tools_path": "D:\\esp\\v6.0.3",
+  "idf_python_env_path": "D:\\esp\\v6.0.3\\tools\\python\\v6.0.3\\venv",
+  "projects_root": "D:\\project\\esp32-study",
+  "port": 8000
+}
